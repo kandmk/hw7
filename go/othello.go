@@ -225,6 +225,69 @@ func (b *Board) ValidMoves() []Move {
 	return moves
 }
 
+func (b Board) CountBlack() int {
+	var x int
+	for i := 1; i <= 8; i++ {
+		for j := 1; j <= 8; j++ {
+			m := *b.At(Position{i, j})
+			if m == Black {
+				x += 1
+			}
+		}
+	}
+	return x
+}
+
+func (b Board) CountWhite() int {
+	var x int
+	for i := 1; i <= 8; i++ {
+		for j := 1; j <= 8; j++ {
+			m := *b.At(Position{i, j})
+			if m == White {
+				x += 1
+			}
+		}
+	}
+	return x
+}
+
+//不具合の原因
+func (b Board) Clone() []Move {
+	var moves []Move
+	moves = append(moves, b.Next)
+	return moves
+}
+
+////////////////////////////////////
+
+func (b Board) Score(depth int) int {
+	var best int
+	if depth < 1 {
+		return b.CountBlack() - b.CountWhite()
+	}
+	//best := b.Next.MinScore()
+	if b.Next == Black {
+		best := -100
+	} else if b.Next == White {
+		best := 100
+	}
+	for _, move := range b.ValidMoves() {
+		nextBoard := b.Clone().realMove(move) //realMove?
+		score := nextBoard.Score(depth - 1)
+		switch b.Next {
+		case Black:
+			if score > best {
+				best = score
+			}
+		case White:
+			if score < best {
+				best = score
+			}
+		}
+	}
+	return best
+}
+
 // Converts a Board into a human-readable ASCII art diagram.
 func (b Board) String() string {
 	buf := &bytes.Buffer{}
