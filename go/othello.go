@@ -142,6 +142,22 @@ func (b *Board) Exec(m Move) (*Board, error) {
 	return b, nil
 }
 
+//Clone makes a new identical copy of an existing board and returns a
+//pointer to it.
+func (b *Board) Clone() *Board {
+	clone := *b
+	return &clone
+}
+
+//Returns the state of a new board after the given move. Returns an
+//unchanged board and an error if the move is illegal.
+func (b Board) After(m Move) (Board, error) {
+	if _, err := b.Exec(m); err != nil {
+		return b, err
+	}
+	return b, nil
+}
+
 // realMove executes a move that isn't a PASS.
 func (b *Board) realMove(m Move) (*Board, error) {
 	captures, err := b.tryMove(m)
@@ -225,6 +241,7 @@ func (b *Board) ValidMoves() []Move {
 	return moves
 }
 
+//Count the number of Black.
 func (b Board) CountBlack() int {
 	var x int
 	for i := 1; i <= 8; i++ {
@@ -238,6 +255,7 @@ func (b Board) CountBlack() int {
 	return x
 }
 
+//Count the number of White.
 func (b Board) CountWhite() int {
 	var x int
 	for i := 1; i <= 8; i++ {
@@ -251,15 +269,6 @@ func (b Board) CountWhite() int {
 	return x
 }
 
-//不具合の原因
-func (b Board) Clone() []Move {
-	var moves []Move
-	moves = append(moves, b.Next)
-	return moves
-}
-
-////////////////////////////////////
-
 func (b Board) Score(depth int) int {
 	var best int
 	if depth < 1 {
@@ -272,7 +281,7 @@ func (b Board) Score(depth int) int {
 		best := 100
 	}
 	for _, move := range b.ValidMoves() {
-		nextBoard := b.Clone().realMove(move) //realMove?
+		nextBoard := b.Clone().tryMove(move)
 		score := nextBoard.Score(depth - 1)
 		switch b.Next {
 		case Black:
